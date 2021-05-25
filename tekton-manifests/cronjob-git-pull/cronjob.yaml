@@ -1,0 +1,42 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: tekton-git-pulling
+spec:
+  schedule: "*/5 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: demo-account
+          containers:
+            - name: git-pull
+              image: registry.cn-huhehaote.aliyuncs.com/feng-566/tekton-git-polling:v0.0.1
+              imagePullPolicy: IfNotPresent
+              args:
+                - --repo=https://github.com/Xinyan272/CICD-demo.git
+                - --username=$(username)
+                - --password=$(password)
+                - --branch=main
+                - --range=300
+                - --template=/opt/configmaps/tpl/pipelineRunTemplate
+              env:
+                - name: username
+                  valueFrom:
+                    secretKeyRef:
+                      name: git-access-token
+                      key: username
+                - name: password
+                  valueFrom:
+                    secretKeyRef:
+                      name: git-access-token
+                      key: password
+              volumeMounts:
+                - name: tpl
+                  mountPath: "/opt/configmaps/tpl"
+                  readOnly: true
+          volumes:
+            - name: tpl
+              configMap:
+                name: pipelinerun-template

@@ -1,0 +1,21 @@
+kind: EventListener
+apiVersion: triggers.tekton.dev/v1alpha1
+metadata:
+  name: demo-listener
+  namespace: duxinyan
+spec:
+  serviceAccountName: demo-account
+  triggers:
+    - bindings:
+        - name: pipeline-bingding-git
+        - name: pipeline-bingding-repo
+      interceptors:
+        - github:
+            eventTypes:
+              - Push Hook
+            secretRef:
+              secretKey: secretToken
+              secretName: git-webhook-secret
+      name: demo-push-events-trigger
+      template:
+        name: demo-pipeline-template

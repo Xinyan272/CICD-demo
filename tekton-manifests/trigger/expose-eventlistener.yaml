@@ -1,0 +1,11 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: el-demo-listener
+spec:
+  routes:
+    - match: Host(`tekton-trigger.k8s.local`)
+      kind: Rule
+      services:
+        - name: el-demo-listener
+          port: 8080

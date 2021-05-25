@@ -1,0 +1,12 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta1
+kind: GitRepository
+metadata:
+  name: demo
+  namespace: dev
+spec:
+  interval: 30s
+  ref:
+    branch: main
+  url: https://github.com/Xinyan272/CICD-demo.git
+  secretRef:
+    name: https-credentials

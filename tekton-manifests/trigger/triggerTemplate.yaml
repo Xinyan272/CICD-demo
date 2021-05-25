@@ -1,0 +1,59 @@
+kind: TriggerTemplate
+apiVersion: triggers.tekton.dev/v1alpha1
+metadata:
+  name: demo-pipeline-template
+  namespace: duxinyan
+spec:
+  params:
+    - description: The git repository URL to clone from.
+      name: repo-url
+    - default: main
+      description: The git branch to clone.
+      name: branch-name
+    - default: r.addops.soft.360.cn/duxinyan/demo
+      description: The image url for git repo
+      name: image-url
+    - default: latest
+      description: the image name
+      name: image-tag
+    - description: Path to the Dockerfile to build
+      name: DOCKERFILE
+      default: ./DOCKERFILE
+    - description: The build context used by Kaniko.
+      name: CONTEXT
+      default: ./
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: demo-pipeline-
+        namespace: duxinyan
+      params:
+        - name: REPO
+          value: $(tt.params.repo-url)
+        - name: REVISON
+          value: $(tt.params.branch-name)
+        - name: IMAGE
+          value: $(tt.params.image-url)
+        - name: IMAGETAG
+          value: $(tt.params.image-tag)
+        - name: DOCKERFILE
+          value: $(tt.params.DOCKERFILE)
+        - name: CONTEXT
+          value: $(tt.params.CONTEXT)
+      serviceAccountName: demo-account
+      spec:
+        pipelineRef:
+          name: demo-git-image
+      workspaces:
+        - name: demo-source
+          volumeClaimTemplate:
+            spec:
+              accessModes:
+                - ReadWriteOnce
+              resources:
+                requests:
+                  storage: 1Gi
+        - name: dockerconfig
+          secret:
+            secretName: imageRepo-secret

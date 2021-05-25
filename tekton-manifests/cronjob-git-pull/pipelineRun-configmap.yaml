@@ -1,0 +1,43 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: pipelinerun-template
+  namespace: duxinyan
+data:
+  pipelineRunTemplate: |
+    apiVersion: tekton.dev/v1beta1
+    kind: PipelineRun
+    metadata:
+      generateName: demo-pipeline-
+      namespace: duxinyan
+      labels:
+        name: git-pulling
+    spec:
+      serviceAccountName: demo-account
+      pipelineRef:
+        name: demo-git-image
+      workspaces:
+        - name: demo-source
+          volumeClaimTemplate:
+            spec:
+              accessModes:
+                - ReadWriteOnce
+              resources:
+                requests:
+                  storage: 1Gi
+        - name: dockerconfig
+          secret:
+            secretName: imageRepo-secret
+      params:
+        - name: REPO
+          value: 'https://github.com/Xinyan272/CICD-demo.git'
+        - name: REVIRSION
+          value: main
+        - name: IMAGE
+          value: r.addops.soft.360.cn/duxinyan/demo
+        - name: IMAGETAG
+          value: {{ index . "SHORT_SHA" }}
+        - name: DOCKERFILE
+          value: ./go-echo/Dockerfile
+        - name: CONTEXT
+          value: ./go-echo

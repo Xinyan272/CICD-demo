@@ -1,0 +1,13 @@
+kind: TriggerBinding
+apiVersion: triggers.tekton.dev/v1alpha1
+metadata:
+  name: pipeline-binding-git
+  namespace: duxinyan
+spec:
+  params:
+    - name: branch-name
+      value: main
+    - name: repo-url
+      value: $(body.repository.url)
+    - name: image-tag
+      value: $(body.commits.id)-$(body.commits.timestamp)

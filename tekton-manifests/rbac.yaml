@@ -1,0 +1,95 @@
+---
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: demo-account
+  namespace: duxinyan
+secrets:
+  - name: git-access-token
+  - name: imageRepo-secret
+  - name: git-webhook-secret #if use tekton trigger and git webhook
+imagePullSecrets:
+  - name: imageRepo-secret
+---
+# below 4 rbac needed if use 'trigger'
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: tekton-triggers-demo-minimal
+  namespace: duxinyan
+rules:
+  - verbs:
+      - get
+      - list
+      - watch
+    apiGroups:
+      - ''
+    resources:
+      - secrets
+      - configmaps
+      - serviceaccounts
+  - verbs:
+      - get
+      - list
+      - create
+      - update
+      - watch
+    apiGroups:
+      - triggers.tekton.dev
+    resources:
+      - eventlisteners
+      - triggerbindings
+      - triggertemplates
+      - triggers
+  - verbs:
+      - get
+      - list
+      - create
+      - update
+    apiGroups:
+      - tekton.dev
+    resources:
+      - pipelineruns
+      - pipelineresources
+      - taskruns
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: tekton-triggers-demo-clusterrole
+rules:
+  - verbs:
+      - get
+      - list
+      - watch
+    apiGroups:
+      - triggers.tekton.dev
+    resources:
+      - clustertriggerbindings
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: tekton-triggers-demo-binding
+  namespace: duxinyan
+subjects:
+  - kind: ServiceAccount
+    name: demo-account
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: tekton-triggers-demo-minimal
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: tekton-triggers-demo-clusterbinding
+subjects:
+  - kind: ServiceAccount
+    name: demo-account
+    namespace: duxinyan
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: tekton-triggers-demo-clusterrole
+---

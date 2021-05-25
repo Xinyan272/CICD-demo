@@ -1,0 +1,13 @@
+kind: TriggerBinding
+apiVersion: triggers.tekton.dev/v1alpha1
+metadata:
+  name: pipeline-binding-repo
+  namespace: duxinyan
+spec:
+  params:
+    - name: image-url
+      value: r.addops.soft.360.cn/duxinyan/demo
+    - name: DOCKERFILE
+      value: ./go-echo/Dockerfile
+    - name: CONTEXT
+      value: ./go-echo

@@ -1,0 +1,10 @@
+apiVersion: image.toolkit.fluxcd.io/v1alpha2
+kind: ImageRepository
+metadata:
+  name: demo
+  namespace: dev
+spec:
+  image: https://yourImageRepoUrl/demo
+  interval: 1m0s
+  secretRef:
+    name: imageRepo-secret
