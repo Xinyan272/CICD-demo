@@ -31,7 +31,7 @@ spec:
       params:
         - name: REPO
           value: $(tt.params.repo-url)
-        - name: REVISON
+        - name: REVISION
           value: $(tt.params.branch-name)
         - name: IMAGE
           value: $(tt.params.image-url)
