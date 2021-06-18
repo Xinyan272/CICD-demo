@@ -31,7 +31,7 @@ data:
       params:
         - name: REPO
           value: 'https://github.com/Xinyan272/CICD-demo.git'
-        - name: REVIRSION
+        - name: REVISION
           value: main
         - name: IMAGE
           value: r.addops.soft.360.cn/duxinyan/demo
