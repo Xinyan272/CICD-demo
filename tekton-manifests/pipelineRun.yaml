@@ -1,0 +1,22 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: kaniko-pipeline-1
+  namespace: duxinyan
+spec:
+  params:
+    - name: IMAGE
+      value: imageRepoUrl/demo/test
+    - name: IMAGETAG
+      value: 2.0.1
+  serviceAccountName: pipeline-account
+  resources:
+     - name: git-resource
+       resourceRef:
+         name: kaniko-git-source
+  pipelineRef:
+    name: kaniko-pipeline
+  workspaces:
+    - name: dockerconfig
+      secret:
+        secretName: imageRepo-secret

@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
         - name: go-echo
-          image: r.addops.soft.360.cn/duxinyan/demo:latest # {"$imagepolicy": "dev:demo"}
+          image: imageRepoUrl/xinyan/demo:1.0.0 # {"$imagepolicy": "dev:demo"}
           ports:
             - containerPort: 8080

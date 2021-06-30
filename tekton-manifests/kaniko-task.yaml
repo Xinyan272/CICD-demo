@@ -1,0 +1,79 @@
+kind: Task
+apiVersion: tekton.dev/v1alpha1
+metadata:
+  name: kaniko
+  namespace: duxinyan
+spec:
+  description: >-
+    This Task builds source into a container image using Google's kaniko tool.
+    Kaniko doesn't depend on a Docker daemon and executes each command within a
+    Dockerfile completely in userspace. This enables building container images
+    in environments that can't easily or securely run a Docker daemon, such as a
+    standard Kubernetes cluster.
+  params:
+    - description: myrepo/myimage.
+      name: IMAGE
+      type: string
+    - default: latest
+      description: tag of image
+      name: imageTag
+      type: string
+    - default: ./Dockerfile
+      description: Path to the Dockerfile to build.
+      name: DOCKERFILE
+      type: string
+    - default: ./
+      description: The build context used by Kaniko.
+      name: CONTEXT
+      type: string
+    - default: ''
+      name: EXTRA_ARGS
+      type: string
+    - default: 'gcr.io/kaniko-project/executor:v1.5.1@sha256:c6166717f7fe0b7da44908c986137ecfeab21f31ec3992f6e128fff8a94be8a5'
+      description: The image on which builds will run
+      name: BUILDER_IMAGE
+      type: string
+  resources:
+    inputs:
+      - name: git-source
+        type: git
+  results:
+    - description: Digest of the image just built.
+      name: IMAGE-DIGEST
+  steps:
+    - args:
+        - $(params.EXTRA_ARGS)
+        - '--dockerfile=$(params.DOCKERFILE)'
+        - '--context=/workspace/git-source/$(params.CONTEXT)'
+        - '--destination=$(params.IMAGE):$(params.imageTag)'
+        - '--oci-layout-path=/workspace/git-source/$(params.CONTEXT)/image-digest'
+      image: $(params.BUILDER_IMAGE)
+      name: build-and-push
+      resources: {}
+      securityContext:
+        runAsUser: 0
+      workingDir: /workspace/git-source
+    - args:
+        - >-
+          -images=[{"name":"$(params.IMAGE)","type":"image","url":"$(params.IMAGE)","digest":"","OutputImageDir":"/workspace/git-source/$(params.CONTEXT)/image-digest"}]
+        - '-terminationMessagePath=$(params.CONTEXT)/image-digested'
+      command:
+        - /ko-app/imagedigestexporter
+      image: 'gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/imagedigestexporter:v0.24.1'
+      name: write-digest
+      resources: {}
+      securityContext:
+        runAsUser: 0
+      workingDir: /workspace/git-source
+    - image: 'docker.io/stedolan/jq:latest'
+      name: digest-to-results
+      resources: {}
+      script: >
+        cat $(params.CONTEXT)/image-digested | jq '.[0].value' -rj | tee
+        /tekton/results/IMAGE-DIGEST
+      workingDir: /workspace/git-source
+  workspaces:
+    - description: Includes a docker `config.json`
+      mountPath: /kaniko/.docker
+      name: dockerconfig
+      optional: true

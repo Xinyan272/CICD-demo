@@ -1,0 +1,12 @@
+kind: PipelineResource
+apiVersion: tekton.dev/v1alpha1
+metadata:
+  name: kaniko-git-source
+  namespace: duxinyan
+spec:
+  params:
+    - name: url
+      value: 'https://github.com/Xinyan272/CICD-demo.git'
+    - name: revision
+      value: main
+  type: git

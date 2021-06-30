@@ -6,7 +6,7 @@ metadata:
 spec:
   params:
     - name: image-url
-      value: r.addops.soft.360.cn/duxinyan/demo
+      value: imageRepoUrl/demo/test
     - name: DOCKERFILE
       value: ./go-echo/Dockerfile
     - name: CONTEXT

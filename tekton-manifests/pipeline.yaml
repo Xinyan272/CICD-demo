@@ -1,45 +1,29 @@
 kind: Pipeline
 apiVersion: tekton.dev/v1alpha1
 metadata:
-  name: demo-git-image
+  name: kaniko-pipeline
   namespace: duxinyan
 spec:
-  description: |
-    Pipeline demonstrating the following:
-      - Using the git-clone to clone a branch to PVC
-      - Using the kaniko task to build image and push image to registry
   params:
-    - description: The git repository URL to clone from.
-      name: REPO
-      type: string
-    - description: The git branch to clone.
-      name: REVISION
-      type: string
     - description: The image url for git repo
       name: IMAGE
       type: string
-    - description: the image tag
+    - default: latest
+      description: the image tag
       name: IMAGETAG
       type: string
-    - description: Path to the Dockerfile to build
+    - default: ./Dockerfile
+      description: Path to the Dockerfile to build
       name: DOCKERFILE
       type: string
-    - description: The build context used by Kaniko.
+    - default: ./
+      description: The build context used by Kaniko.
       name: CONTEXT
       type: string
+  resources:
+    - name: git-resource
+      type: git
   tasks:
-    - name: fetch-repo
-      params:
-        - name: url
-          value: $(params.REPO)
-        - name: revision
-          value: $(params.REVISION)
-      taskRef:
-        kind: Task
-        name: git-clone
-      workspaces:
-        - name: output
-          workspace: demo-source
     - name: kaniko
       params:
         - name: IMAGE
@@ -52,14 +36,14 @@ spec:
           value: $(params.CONTEXT)
         - name: EXTRA_ARGS
           value: '--skip-tls-verify'
-      runAfter:
-        - fetch-repo
+      resources:
+        inputs:
+          - name: git-source
+            resource: git-resource
       taskRef:
         kind: Task
         name: kaniko
       workspaces:
-        - name: source
-          workspace: demo-source
         - name: dockerconfig
           workspace: dockerconfig
     - name: verify-digest
@@ -83,9 +67,5 @@ spec:
                 *)       echo "Digest value is not correct" && exit 1 ;;
               esac
   workspaces:
-    - description: |
-        This workspace will receive the cloned git repo and be passed
-        to the next Task for kaniko to build image.
-      name: demo-source
     - description: Includes a docker `config.json`
       name: dockerconfig

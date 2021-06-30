@@ -10,8 +10,7 @@ spec:
     - default: main
       description: The git branch to clone.
       name: branch-name
-    - default: r.addops.soft.360.cn/duxinyan/demo
-      description: The image url for git repo
+    - description: The image url for git repo
       name: image-url
     - default: latest
       description: the image name
@@ -28,11 +27,8 @@ spec:
       metadata:
         generateName: demo-pipeline-
         namespace: duxinyan
-      params:
-        - name: REPO
-          value: $(tt.params.repo-url)
-        - name: REVISION
-          value: $(tt.params.branch-name)
+      spec:
+        params:
         - name: IMAGE
           value: $(tt.params.image-url)
         - name: IMAGETAG
@@ -41,19 +37,19 @@ spec:
           value: $(tt.params.DOCKERFILE)
         - name: CONTEXT
           value: $(tt.params.CONTEXT)
-      serviceAccountName: demo-account
-      spec:
+        serviceAccountName: pipeline-account
+        resources:
+          - name: git-resource
+            resourceSpec:
+              type: git
+              params:
+                - name: revision
+                  value: $(tt.params.branch-name)
+                - name: url
+                  value: $(tt.params.repo-url)
         pipelineRef:
-          name: demo-git-image
-      workspaces:
-        - name: demo-source
-          volumeClaimTemplate:
-            spec:
-              accessModes:
-                - ReadWriteOnce
-              resources:
-                requests:
-                  storage: 1Gi
-        - name: dockerconfig
-          secret:
-            secretName: imageRepo-secret
+          name: kaniko-pipeline
+        workspaces:
+          - name: dockerconfig
+            secret:
+              secretName: imageRepo-secret

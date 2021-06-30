@@ -13,28 +13,20 @@ data:
       labels:
         name: git-pulling
     spec:
-      serviceAccountName: demo-account
+      serviceAccountName: pipeline-account
+      resources:
+        - name: git-resource
+          resourceRef:
+            name: kaniko-git-source
       pipelineRef:
-        name: demo-git-image
+        name: kaniko-pipeline
       workspaces:
-        - name: demo-source
-          volumeClaimTemplate:
-            spec:
-              accessModes:
-                - ReadWriteOnce
-              resources:
-                requests:
-                  storage: 1Gi
         - name: dockerconfig
           secret:
             secretName: imageRepo-secret
       params:
-        - name: REPO
-          value: 'https://github.com/Xinyan272/CICD-demo.git'
-        - name: REVISION
-          value: main
         - name: IMAGE
-          value: r.addops.soft.360.cn/duxinyan/demo
+          value: imageRepoUrl/demo/test
         - name: IMAGETAG
           value: {{ index . "SHORT_SHA" }}
         - name: DOCKERFILE
